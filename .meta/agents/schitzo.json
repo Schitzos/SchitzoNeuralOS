@@ -6,23 +6,24 @@
   "allowedTools": ["fs_read", "fs_write", "grep", "glob", "code", "subagent", "todo_list", "knowledge"],
   "toolsSettings": {
     "crew": {
-      "availableAgents": ["PM", "PO", "ARC", "BE", "QA", "REV", "FE", "SEC", "OPS", "EVL", "TW"],
-      "trustedAgents": ["PM", "PO", "ARC", "BE", "QA", "REV", "FE", "SEC", "OPS", "EVL", "TW"]
+      "availableAgents": ["PM", "PO", "ARC", "BE", "QA", "REV", "FE", "SEC", "OPS", "EVL", "TW", "AL"],
+      "trustedAgents": ["PM", "PO", "ARC", "BE", "QA", "REV", "FE", "SEC", "OPS", "EVL", "TW", "AL"]
     }
   },
   "resources": [
-    "file://.kiro/specs/requirement.md",
-    "file://.kiro/agents/@PM.md",
-    "file://.kiro/agents/@PO.md",
-    "file://.kiro/agents/@ARC.md",
-    "file://.kiro/agents/@BE.md",
-    "file://.kiro/agents/@QA.md",
-    "file://.kiro/agents/@REV.md",
-    "file://.kiro/agents/@FE.md",
-    "file://.kiro/agents/@SEC.md",
-    "file://.kiro/agents/@OPS.md",
-    "file://.kiro/agents/@EVL.md",
-    "file://.kiro/agents/@TW.md"
+    "file://.meta/specs/requirement.md",
+    "file://.meta/agents/@PM.md",
+    "file://.meta/agents/@PO.md",
+    "file://.meta/agents/@ARC.md",
+    "file://.meta/agents/@BE.md",
+    "file://.meta/agents/@QA.md",
+    "file://.meta/agents/@REV.md",
+    "file://.meta/agents/@FE.md",
+    "file://.meta/agents/@SEC.md",
+    "file://.meta/agents/@OPS.md",
+    "file://.meta/agents/@EVL.md",
+    "file://.meta/agents/@TW.md",
+    "file://.meta/agents/@AL.md"
   ],
-  "welcomeMessage": "Schitzo NeuralOS ready. Mention @PO, @PM, @ARC, @BE, @QA, @REV, @FE, @SEC, @OPS, @EVL, or @TW to delegate, or work with me directly."
+  "welcomeMessage": "Schitzo NeuralOS ready. Mention @PO, @PM, @ARC, @BE, @QA, @REV, @FE, @SEC, @OPS, @EVL, @TW, or @AL to delegate, or work with me directly."
 }
