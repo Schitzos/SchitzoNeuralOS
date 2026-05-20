@@ -1,0 +1,37 @@
+{
+  "name": "schitzo-neural-os",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:core": "npm run dev -w apps/core",
+    "dev:console": "npm run dev -w apps/console",
+    "build": "npm run build --workspaces",
+    "build:core": "npm run build -w apps/core",
+    "build:console": "npm run build -w apps/console",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "test": "npm run test --workspaces --if-present",
+    "db:migrate": "npm run db:migrate -w apps/core",
+    "db:generate": "npm run db:generate -w apps/core",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "19.8.1",
+    "@commitlint/config-conventional": "19.8.1",
+    "@typescript-eslint/eslint-plugin": "8.33.0",
+    "@typescript-eslint/parser": "8.33.0",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "9.1.0",
+    "husky": "9.1.7",
+    "prettier": "3.5.3",
+    "typescript": "5.8.3",
+    "vitest": "3.2.1"
+  },
+  "overrides": {
+    "postcss": "8.5.4"
+  }
+}

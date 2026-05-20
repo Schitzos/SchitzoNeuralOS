@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  telegramUserId String?   @unique @map("telegram_user_id")
+  name           String
+  email          String?   @unique
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  projects       Project[]
+
+  @@map("users")
+}
+
+model Project {
+  id                  String    @id @default(uuid())
+  userId              String    @map("user_id")
+  name                String
+  path                String
+  gitRemoteUrl        String?   @map("git_remote_url")
+  githubRepo          String?   @map("github_repo")
+  githubProjectId     String?   @map("github_project_id")
+  hermesKanbanBoardId String?   @map("hermes_kanban_board_id")
+  defaultBranch       String    @default("develop") @map("default_branch")
+  lastUsedAt          DateTime? @map("last_used_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id])
+  tasks         Task[]
+  agentMessages AgentMessage[]
+  artifacts     Artifact[]
+
+  @@map("projects")
+}
+
+model Task {
+  id                   String    @id @default(uuid())
+  projectId            String    @map("project_id")
+  userPrompt           String    @map("user_prompt")
+  taskType             String    @default("feature") @map("task_type")
+  difficulty           String    @default("medium")
+  status               String    @default("pending")
+  executionMode        String    @default("single") @map("execution_mode")
+  githubIssueId        String?   @map("github_issue_id")
+  githubProjectItemId  String?   @map("github_project_item_id")
+  hermesKanbanCardId   String?   @map("hermes_kanban_card_id")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  completedAt          DateTime? @map("completed_at")
+
+  project       Project        @relation(fields: [projectId], references: [id])
+  agentRuns     AgentRun[]
+  toolCalls     ToolCall[]
+  modelUsages   ModelUsage[]
+  agentMessages AgentMessage[]
+  artifacts     Artifact[]
+  logs          Log[]
+
+  @@map("tasks")
+}
+
+model AgentRun {
+  id             String    @id @default(uuid())
+  taskId         String    @map("task_id")
+  agentName      String    @map("agent_name")
+  modelName      String    @map("model_name")
+  providerRoute  String    @map("provider_route")
+  status         String    @default("running")
+  inputTokens    Int       @default(0) @map("input_tokens")
+  outputTokens   Int       @default(0) @map("output_tokens")
+  rtkEnabled     Boolean   @default(true) @map("rtk_enabled")
+  cavemanEnabled Boolean   @default(true) @map("caveman_enabled")
+  startedAt      DateTime  @default(now()) @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+
+  task        Task         @relation(fields: [taskId], references: [id])
+  toolCalls   ToolCall[]
+  modelUsages ModelUsage[]
+  artifacts   Artifact[]
+
+  @@map("agent_runs")
+}
+
+model ToolCall {
+  id              String   @id @default(uuid())
+  taskId          String   @map("task_id")
+  agentRunId      String   @map("agent_run_id")
+  toolName        String   @map("tool_name")
+  command         String
+  status          String   @default("pending")
+  riskLevel       String   @default("safe") @map("risk_level")
+  requiresApproval Boolean @default(false) @map("requires_approval")
+  approvedByUser  Boolean? @map("approved_by_user")
+  stdout          String?
+  stderr          String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  task     Task     @relation(fields: [taskId], references: [id])
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id])
+
+  @@map("tool_calls")
+}
+
+model ModelUsage {
+  id             String   @id @default(uuid())
+  taskId         String   @map("task_id")
+  agentRunId     String   @map("agent_run_id")
+  modelName      String   @map("model_name")
+  providerRoute  String   @map("provider_route")
+  inputTokens    Int      @map("input_tokens")
+  outputTokens   Int      @map("output_tokens")
+  pricingVersion String   @map("pricing_version")
+  estimatedCost  Float    @map("estimated_cost")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  task     Task     @relation(fields: [taskId], references: [id])
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id])
+
+  @@map("model_usage")
+}
+
+model ModelPricing {
+  id                   String   @id @default(uuid())
+  provider             String
+  model                String
+  inputPricePer1mTokens  Float  @map("input_price_per_1m_tokens")
+  outputPricePer1mTokens Float  @map("output_price_per_1m_tokens")
+  effectiveDate        DateTime @map("effective_date")
+  pricingVersion       String   @map("pricing_version")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@unique([provider, model, pricingVersion])
+  @@map("model_pricing")
+}
+
+model AgentMessage {
+  id              String    @id @default(uuid())
+  projectId       String    @map("project_id")
+  taskId          String    @map("task_id")
+  fromAgent       String    @map("from_agent")
+  toAgentOrChannel String   @map("to_agent_or_channel")
+  messageType     String    @map("message_type")
+  payload         Json
+  createdAt       DateTime  @default(now()) @map("created_at")
+  consumedAt      DateTime? @map("consumed_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  task    Task    @relation(fields: [taskId], references: [id])
+
+  @@map("agent_messages")
+}
+
+model Artifact {
+  id             String   @id @default(uuid())
+  projectId      String   @map("project_id")
+  taskId         String   @map("task_id")
+  agentRunId     String   @map("agent_run_id")
+  artifactType   String   @map("artifact_type")
+  relativePath   String   @map("relative_path")
+  version        Int      @default(1)
+  checksum       String?
+  createdByAgent String   @map("created_by_agent")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  project  Project  @relation(fields: [projectId], references: [id])
+  task     Task     @relation(fields: [taskId], references: [id])
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id])
+
+  @@map("artifacts")
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  taskId    String   @map("task_id")
+  level     String
+  message   String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id])
+
+  @@map("logs")
+}
