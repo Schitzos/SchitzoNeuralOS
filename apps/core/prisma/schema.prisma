@@ -190,3 +190,21 @@ model Log {
 
   @@map("logs")
 }
+
+model Agent {
+  id                String    @id @default(uuid())
+  name              String    @unique
+  description       String
+  prompt            String    @db.Text
+  status            String    @default("active")
+  agentType         String    @default("specialist") @map("agent_type")
+  allowedTools      String[]  @map("allowed_tools")
+  capabilityPolicy  Json      @map("capability_policy")
+  keyboardShortcut  String?   @map("keyboard_shortcut")
+  welcomeMessage    String?   @map("welcome_message")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  expiresAfterTask  Boolean   @default(false) @map("expires_after_task")
+
+  @@map("agents")
+}
