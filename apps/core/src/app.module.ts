@@ -20,6 +20,7 @@ import { HandleWebhookUseCase } from './application/use-cases/handle-webhook.use
 import { TaskIntakeUseCase } from './application/use-cases/task-intake.use-case';
 import { ProcessTaskUseCase } from './application/use-cases/process-task.use-case';
 import { SendTelegramResponseUseCase } from './application/use-cases/send-telegram-response.use-case';
+import { TaskStatusTracker } from './domain/services/task-status-tracker.service';
 import { TELEGRAM_PORT } from './application/ports/telegram.port';
 import { TASK_INTAKE_PORT } from './application/ports/task-intake.port';
 import { NINE_ROUTER_PORT } from './application/ports/nine-router.port';
@@ -70,6 +71,7 @@ import { ModelPricingService } from './infrastructure/services/model-pricing.ser
     { provide: TASK_INTAKE_PORT, useClass: TaskIntakeUseCase },
     ProcessTaskUseCase,
     SendTelegramResponseUseCase,
+    TaskStatusTracker,
   ],
   exports: [
     PrismaService,
