@@ -10,8 +10,8 @@
     "strictPropertyInitialization": false,
     "strict": false,
     "skipLibCheck": true,
-    "ignoreDeprecations": "6.0",
-    "moduleResolution": "node",
+    "ignoreDeprecations": "5.0",
+    "moduleResolution": "node10",
     "baseUrl": ".",
     "paths": {
       "@core/*": ["./src/*"],
