@@ -15,8 +15,8 @@
     "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
-      "@schitzo/types": ["packages/types/src"],
-      "@schitzo/shared": ["packages/shared/src"]
+      "@schitzo/types": ["packages/types/dist"],
+      "@schitzo/shared": ["packages/shared/dist"]
     }
   },
   "exclude": ["node_modules", "dist"]

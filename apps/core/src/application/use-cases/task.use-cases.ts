@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Task } from '../../domain/entities/task.entity';
 import { TaskId, UserPrompt } from '../../domain/value-objects';
 import { TaskStatus, TaskType, ExecutionMode } from '../../domain/enums';
@@ -13,10 +13,9 @@ export interface CreateTaskCommand {
 
 @Injectable()
 export class CreateTaskUseCase {
-  constructor(private readonly taskRepository: ITaskRepository) {}
+  constructor(@Inject('ITaskRepository') private readonly taskRepository: ITaskRepository) {}
 
   async execute(command: CreateTaskCommand): Promise<Task> {
-    // Generate unique ID (in real implementation, use UUID)
     const taskId = new TaskId(`task-${Date.now()}`);
     const userPrompt = new UserPrompt(command.userPrompt);
 
@@ -36,7 +35,7 @@ export class CreateTaskUseCase {
 
 @Injectable()
 export class UpdateTaskStatusUseCase {
-  constructor(private readonly taskRepository: ITaskRepository) {}
+  constructor(@Inject('ITaskRepository') private readonly taskRepository: ITaskRepository) {}
 
   async execute(taskId: string, newStatus: TaskStatus): Promise<Task> {
     const id = new TaskId(taskId);
@@ -46,7 +45,6 @@ export class UpdateTaskStatusUseCase {
       throw new Error(`Task with id ${taskId} not found`);
     }
 
-    // Use domain logic for status validation
     task.updateStatus(newStatus);
 
     return await this.taskRepository.update(id, {
@@ -58,7 +56,7 @@ export class UpdateTaskStatusUseCase {
 
 @Injectable()
 export class GetTaskUseCase {
-  constructor(private readonly taskRepository: ITaskRepository) {}
+  constructor(@Inject('ITaskRepository') private readonly taskRepository: ITaskRepository) {}
 
   async execute(taskId: string): Promise<Task | null> {
     const id = new TaskId(taskId);
@@ -68,7 +66,7 @@ export class GetTaskUseCase {
 
 @Injectable()
 export class ListTasksUseCase {
-  constructor(private readonly taskRepository: ITaskRepository) {}
+  constructor(@Inject('ITaskRepository') private readonly taskRepository: ITaskRepository) {}
 
   async execute(params: {
     projectId?: string;
