@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -29,7 +29,7 @@ export class AgentRegistryService implements OnModuleInit {
     const agentsDir = path.join(process.cwd(), '.meta', 'agents');
     
     if (!fs.existsSync(agentsDir)) {
-      console.warn('⚠️ .meta/agents directory not found, skipping agent profile loading');
+      console.warn('\u26a0\ufe0f .meta/agents directory not found, skipping agent profile loading');
       return;
     }
 
@@ -41,20 +41,19 @@ export class AgentRegistryService implements OnModuleInit {
         const content = fs.readFileSync(filePath, 'utf-8');
         const profile: AgentProfile = JSON.parse(content);
         
-        // Validate required fields
         if (!profile.name || !profile.description || !profile.prompt) {
-          console.warn(`⚠️ Invalid agent profile in ${file}: missing required fields`);
+          console.warn(`\u26a0\ufe0f Invalid agent profile in ${file}: missing required fields`);
           continue;
         }
 
         this.agents.set(profile.name, profile);
-        console.log(`✅ Loaded agent profile: @${profile.name}`);
+        console.log(`\u2705 Loaded agent profile: @${profile.name}`);
       } catch (error) {
-        console.error(`❌ Failed to load agent profile from ${file}:`, (error as Error).message);
+        console.error(`\u274c Failed to load agent profile from ${file}:`, (error as Error).message);
       }
     }
 
-    console.log(`📋 Loaded ${this.agents.size} agent profiles from .meta/agents/`);
+    console.log(`\ud83d\udccb Loaded ${this.agents.size} agent profiles from .meta/agents/`);
   }
 
   private async seedAgentDatabase() {
@@ -88,56 +87,40 @@ export class AgentRegistryService implements OnModuleInit {
           },
         });
       } catch (error) {
-        console.error(`❌ Failed to seed agent ${name} to database:`, (error as Error).message);
+        console.error(`\u274c Failed to seed agent ${name} to database:`, (error as Error).message);
       }
     }
   }
 
   private getAgentType(name: string): string {
-    // Founding agents (always available)
     if (['PO', 'PM', 'AL'].includes(name)) {
       return 'founding';
     }
-    
-    // Specialist agents (created on demand)
     return 'specialist';
   }
 
   private getMaxConcurrentTasks(name: string): number {
-    // Agent Lead can handle multiple delegations
     if (name === 'AL') return 5;
-    
-    // Most agents handle one task at a time
     return 1;
   }
 
   private getApprovalRequired(name: string): string[] {
-    // Security agent requires approval for high-risk operations
     if (name === 'SEC') {
       return ['shell.execute', 'git.push', 'deployment.*'];
     }
-    
-    // DevOps requires approval for infrastructure changes
     if (name === 'OPS') {
       return ['deployment.*', 'infrastructure.*'];
     }
-    
-    // Default: no special approval requirements
     return [];
   }
 
   private getAllowedModelTiers(name: string): string[] {
-    // Product Owner and Architect get strongest models
     if (['PO', 'ARC'].includes(name)) {
       return ['strongest', 'standard', 'small'];
     }
-    
-    // Backend, QA, Security get standard+ models
     if (['BE', 'QA', 'SEC'].includes(name)) {
       return ['standard', 'small'];
     }
-    
-    // Others get standard models
     return ['standard', 'small'];
   }
 
@@ -157,11 +140,10 @@ export class AgentRegistryService implements OnModuleInit {
     const profile = this.getAgent(agentName);
     
     if (!profile) {
-      console.error(`❌ Agent @${agentName} not found in registry`);
+      console.error(`\u274c Agent @${agentName} not found in registry`);
       return false;
     }
 
-    // Check if agent is available (not at max concurrent tasks)
     const activeRuns = await this.prisma.agentRun.count({
       where: {
         agentName,
@@ -174,18 +156,18 @@ export class AgentRegistryService implements OnModuleInit {
     });
 
     if (!agent) {
-      console.error(`❌ Agent @${agentName} not found in database`);
+      console.error(`\u274c Agent @${agentName} not found in database`);
       return false;
     }
 
     const maxConcurrent = (agent.capabilityPolicy as any)?.maxConcurrentTasks || 1;
     
     if (activeRuns >= maxConcurrent) {
-      console.warn(`⚠️ Agent @${agentName} is at max capacity (${activeRuns}/${maxConcurrent})`);
+      console.warn(`\u26a0\ufe0f Agent @${agentName} is at max capacity (${activeRuns}/${maxConcurrent})`);
       return false;
     }
 
-    console.log(`🚀 Spawning agent @${agentName} for task execution`);
+    console.log(`\ud83d\ude80 Spawning agent @${agentName} for task execution`);
     return true;
   }
 }
