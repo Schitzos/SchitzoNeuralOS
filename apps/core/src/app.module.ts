@@ -21,6 +21,8 @@ import { TaskIntakeUseCase } from './application/use-cases/task-intake.use-case'
 import { ProcessTaskUseCase } from './application/use-cases/process-task.use-case';
 import { SendTelegramResponseUseCase } from './application/use-cases/send-telegram-response.use-case';
 import { TaskStatusTracker } from './domain/services/task-status-tracker.service';
+import { TASK_LOGGER_PORT } from './application/ports/task-logger.port';
+import { TaskLoggerAdapter } from './infrastructure/logging/task-logger.adapter';
 import { TELEGRAM_PORT } from './application/ports/telegram.port';
 import { TASK_INTAKE_PORT } from './application/ports/task-intake.port';
 import { NINE_ROUTER_PORT } from './application/ports/nine-router.port';
@@ -72,6 +74,8 @@ import { ModelPricingService } from './infrastructure/services/model-pricing.ser
     ProcessTaskUseCase,
     SendTelegramResponseUseCase,
     TaskStatusTracker,
+    { provide: TASK_LOGGER_PORT, useClass: TaskLoggerAdapter },
+    TaskLoggerAdapter,
   ],
   exports: [
     PrismaService,
