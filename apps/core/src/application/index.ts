@@ -5,3 +5,4 @@ export { ITaskRepository, FindTasksParams, TaskUpdateData } from './ports/reposi
 export { ITelegramPort, TELEGRAM_PORT } from './ports/telegram.port';
 export { ITaskIntakePort, TASK_INTAKE_PORT, TaskIntakeCommand, TaskIntakeResult, TaskSource } from './ports/task-intake.port';
 export { INineRouterPort, NINE_ROUTER_PORT, ChatOptions, ChatMessage, ChatResult } from './ports/nine-router.port';
+export { IJobQueuePort, JOB_QUEUE_PORT, JobData, JobResult } from './ports/job-queue.port';

@@ -21,12 +21,14 @@ import { TaskIntakeUseCase } from './application/use-cases/task-intake.use-case'
 import { TELEGRAM_PORT } from './application/ports/telegram.port';
 import { TASK_INTAKE_PORT } from './application/ports/task-intake.port';
 import { NINE_ROUTER_PORT } from './application/ports/nine-router.port';
+import { JOB_QUEUE_PORT } from './application/ports/job-queue.port';
 
 // Infrastructure
 import { PrismaService } from './infrastructure/prisma/prisma.service';
 import { TaskRepository } from './infrastructure/repositories/task.repository';
 import { TelegramApiAdapter } from './infrastructure/adapters/telegram-api.adapter';
 import { NineRouterAdapter } from './infrastructure/adapters/nine-router.adapter';
+import { BullMQAdapter } from './infrastructure/queue/bullmq.adapter';
 import { AgentRegistryService } from './infrastructure/services/agent-registry.service';
 import { ModelPricingService } from './infrastructure/services/model-pricing.service';
 
@@ -51,6 +53,8 @@ import { ModelPricingService } from './infrastructure/services/model-pricing.ser
     TelegramApiAdapter,
     { provide: NINE_ROUTER_PORT, useClass: NineRouterAdapter },
     NineRouterAdapter,
+    { provide: JOB_QUEUE_PORT, useClass: BullMQAdapter },
+    BullMQAdapter,
     AgentRegistryService,
     ModelPricingService,
 
