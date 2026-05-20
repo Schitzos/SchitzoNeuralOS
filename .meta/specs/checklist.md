@@ -18,7 +18,7 @@
 - [x] PHASE-0.14 — Define Project Manager Agent profile
 - [x] PHASE-0.15 — Define Agent Creation Protocol
 - [x] PHASE-0.16 — Document local developer workflow
-- [ ] PHASE-0.17 — Analyze Phase 1 agent requirements
+- [x] PHASE-0.17 — Analyze Phase 1 agent requirements
 
 ## Phase 1 — Basic Control Loop
 - [ ] PHASE-1.1 — Implement Telegram bot webhook integration

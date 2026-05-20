@@ -1,7 +1,7 @@
 # Schitzo NeuralOS — High-Level System Design
 
 **Status:** Architectural reference for Phase 0+ implementation  
-**Derived from:** `.kiro/specs/requirement.md` v1.1
+**Derived from:** `.meta/specs/requirement.md` v1.1
 
 ---
 

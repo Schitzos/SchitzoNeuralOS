@@ -64,17 +64,17 @@ If a task is assigned directly (e.g., "implement X"), the orchestrator:
 
 | Alias | Agent | File | Phase | Permanence |
 |-------|-------|------|-------|------------|
-| `@PO` | Product Owner | `.kiro/agents/PO.json` | Phase 0 | Permanent |
-| `@PM` | Project Manager | `.kiro/agents/PM.json` | Phase 0 | Permanent |
-| `@ARC` | Architect | `.kiro/agents/ARC.json` | Phase 0 | Permanent |
-| `@BE` | Backend | `.kiro/agents/BE.json` | Phase 1 | Permanent |
-| `@QA` | QA | `.kiro/agents/QA.json` | Phase 1 | Permanent |
-| `@REV` | Reviewer | `.kiro/agents/REV.json` | Phase 2 | Permanent |
-| `@FE` | Frontend / Dashboard | `.kiro/agents/FE.json` | Phase 4 | Permanent |
-| `@SEC` | Security | `.kiro/agents/SEC.json` | Phase 3 | Permanent |
-| `@OPS` | DevOps | `.kiro/agents/OPS.json` | Phase 5 | Temporary per task |
-| `@EVL` | Evaluator | `.kiro/agents/EVL.json` | Phase 6 | Temporary per compare run |
-| `@TW` | Technical Writer | `.kiro/agents/TW.json` | Phase 0 | Permanent |
+| `@PO` | Product Owner | `.meta/agents/PO.json` | Phase 0 | Permanent |
+| `@PM` | Project Manager | `.meta/agents/PM.json` | Phase 0 | Permanent |
+| `@ARC` | Architect | `.meta/agents/ARC.json` | Phase 0 | Permanent |
+| `@BE` | Backend | `.meta/agents/BE.json` | Phase 1 | Permanent |
+| `@QA` | QA | `.meta/agents/QA.json` | Phase 1 | Permanent |
+| `@REV` | Reviewer | `.meta/agents/REV.json` | Phase 2 | Permanent |
+| `@FE` | Frontend / Dashboard | `.meta/agents/FE.json` | Phase 4 | Permanent |
+| `@SEC` | Security | `.meta/agents/SEC.json` | Phase 3 | Permanent |
+| `@OPS` | DevOps | `.meta/agents/OPS.json` | Phase 5 | Temporary per task |
+| `@EVL` | Evaluator | `.meta/agents/EVL.json` | Phase 6 | Temporary per compare run |
+| `@TW` | Technical Writer | `.meta/agents/TW.json` | Phase 0 | Permanent |
 
 ## Keyboard Shortcuts
 
@@ -94,8 +94,8 @@ If a task is assigned directly (e.g., "implement X"), the orchestrator:
 
 ## Adding New Agents
 
-1. Create `<ALIAS>.json` in `.kiro/agents/`
-2. Create `@<ALIAS>.md` documentation in `.kiro/agents/`
+1. Create `<ALIAS>.json` in `.meta/agents/`
+2. Create `@<ALIAS>.md` documentation in `.meta/agents/`
 3. Add the alias to `schitzo.json` → `toolsSettings.crew.availableAgents`
 4. Add routing instruction to `schitzo.json` prompt
 5. Update this file's Registered Agents table
@@ -115,16 +115,16 @@ All implementation agents (@BE, @FE, @OPS, @SEC) MUST reference these documents 
 
 | Document | Path | Purpose |
 |----------|------|---------|
-| Coding Standards | `.kiro/docs/standards/coding-standards.md` | Clean Architecture, module structure, naming |
-| API Response Contract | `.kiro/docs/standards/api-response-contract.md` | Response envelope, status codes |
-| Error Handling | `.kiro/docs/standards/error-handling.md` | Exceptions, logging, retry policy |
-| Testing Standards | `.kiro/docs/standards/testing-standards.md` | Test patterns, mocking, coverage |
-| Environment Config | `.kiro/docs/standards/environment-config.md` | ConfigModule, validation |
-| Definition of Done | `.kiro/docs/standards/definition-of-done.md` | Mandatory checklist |
-| Ticket Standards | `.kiro/docs/standards/ticket-standards.md` | GitHub issue format |
-| Telegram Format | `.kiro/docs/protocols/telegram-message-format.md` | Message templates |
-| 9Router Contract | `.kiro/docs/contracts/9router-api-contract.md` | Model gateway API |
-| Contract Registry | `.kiro/docs/contracts/README.md` | All integration contracts |
-| Task Packet | `.kiro/docs/templates/task-packet.md` | PM → Agent Lead handoff |
+| Coding Standards | `.meta/docs/standards/coding-standards.md` | Clean Architecture, module structure, naming |
+| API Response Contract | `.meta/docs/standards/api-response-contract.md` | Response envelope, status codes |
+| Error Handling | `.meta/docs/standards/error-handling.md` | Exceptions, logging, retry policy |
+| Testing Standards | `.meta/docs/standards/testing-standards.md` | Test patterns, mocking, coverage |
+| Environment Config | `.meta/docs/standards/environment-config.md` | ConfigModule, validation |
+| Definition of Done | `.meta/docs/standards/definition-of-done.md` | Mandatory checklist |
+| Ticket Standards | `.meta/docs/standards/ticket-standards.md` | GitHub issue format |
+| Telegram Format | `.meta/docs/protocols/telegram-message-format.md` | Message templates |
+| 9Router Contract | `.meta/docs/contracts/9router-api-contract.md` | Model gateway API |
+| Contract Registry | `.meta/docs/contracts/README.md` | All integration contracts |
+| Task Packet | `.meta/docs/templates/task-packet.md` | PM → Agent Lead handoff |
 
 Non-compliance with these standards is a review blocker.

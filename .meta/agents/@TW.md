@@ -24,7 +24,7 @@ Documentation specialist for Schitzo NeuralOS. Creates and maintains all project
 
 - Receives documentation requests from @PM, @ARC, @BE, @FE
 - References specs and implementation for accuracy
-- Outputs markdown files in `docs/`, project root, or `.kiro/`
+- Outputs markdown files in `docs/`, project root, or `.meta/`
 - Coordinates with @REV for doc review when needed
 
 ## Tools

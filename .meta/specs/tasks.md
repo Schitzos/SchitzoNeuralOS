@@ -1,7 +1,7 @@
 # Schitzo NeuralOS — Detailed Task Reference
 
 **Last Updated:** 2026-05-20
-**Source:** `.kiro/specs/requirement.md` v1.1
+**Source:** `.meta/specs/requirement.md` v1.1
 
 ---
 
