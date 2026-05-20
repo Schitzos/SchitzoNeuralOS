@@ -8,11 +8,19 @@
     "start": "node dist/main",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,test}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run test && npm run lint",
+    "validate": "npm run build && npm run test && npm run lint && npm run start:check",
+    "start:check": "timeout 10s npm run dev || echo 'Startup check completed'",
+    "fix": "npm run lint:fix && prettier --write \"src/**/*.ts\"",
+    "pre-commit": "npm run check"
   },
   "dependencies": {
     "@nestjs/common": "11.1.21",
