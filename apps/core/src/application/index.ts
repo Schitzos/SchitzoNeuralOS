@@ -1,5 +1,6 @@
-// Application Layer Exports
-export * from './ports/repositories.interface';
-export * from './ports/telegram.port';
-export * from './use-cases/task.use-cases';
-export * from './use-cases/handle-webhook.use-case';
+export { CreateTaskUseCase, UpdateTaskStatusUseCase, GetTaskUseCase, ListTasksUseCase } from './use-cases/task.use-cases';
+export { HandleWebhookUseCase } from './use-cases/handle-webhook.use-case';
+export { TaskIntakeUseCase } from './use-cases/task-intake.use-case';
+export { ITaskRepository, FindTasksParams, TaskUpdateData } from './ports/repositories.interface';
+export { ITelegramPort, TELEGRAM_PORT } from './ports/telegram.port';
+export { ITaskIntakePort, TASK_INTAKE_PORT, TaskIntakeCommand, TaskIntakeResult, TaskSource } from './ports/task-intake.port';

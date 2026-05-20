@@ -17,7 +17,9 @@ import {
   ListTasksUseCase,
 } from './application/use-cases/task.use-cases';
 import { HandleWebhookUseCase } from './application/use-cases/handle-webhook.use-case';
+import { TaskIntakeUseCase } from './application/use-cases/task-intake.use-case';
 import { TELEGRAM_PORT } from './application/ports/telegram.port';
+import { TASK_INTAKE_PORT } from './application/ports/task-intake.port';
 
 // Infrastructure
 import { PrismaService } from './infrastructure/prisma/prisma.service';
@@ -54,6 +56,8 @@ import { ModelPricingService } from './infrastructure/services/model-pricing.ser
     GetTaskUseCase,
     ListTasksUseCase,
     HandleWebhookUseCase,
+    TaskIntakeUseCase,
+    { provide: TASK_INTAKE_PORT, useClass: TaskIntakeUseCase },
   ],
   exports: [
     PrismaService,
