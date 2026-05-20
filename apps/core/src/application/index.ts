@@ -2,6 +2,7 @@ export { CreateTaskUseCase, UpdateTaskStatusUseCase, GetTaskUseCase, ListTasksUs
 export { HandleWebhookUseCase } from './use-cases/handle-webhook.use-case';
 export { TaskIntakeUseCase } from './use-cases/task-intake.use-case';
 export { ProcessTaskUseCase, ProcessTaskCommand, ProcessTaskResult } from './use-cases/process-task.use-case';
+export { SendTelegramResponseUseCase, SendResponseCommand, ResponseType } from './use-cases/send-telegram-response.use-case';
 export { ITaskRepository, FindTasksParams, TaskUpdateData } from './ports/repositories.interface';
 export { ITelegramPort, TELEGRAM_PORT } from './ports/telegram.port';
 export { ITaskIntakePort, TASK_INTAKE_PORT, TaskIntakeCommand, TaskIntakeResult, TaskSource } from './ports/task-intake.port';
