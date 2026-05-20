@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
 import { Header } from './Header.js';
 import { MessageList } from './MessageList.js';
 import { InputBar } from './InputBar.js';
 import { StatusBar } from './StatusBar.js';
+import { SchitzoCoreClient, CoreClientError } from '../api/core-client.js';
 
 export interface Message {
   id: string;
@@ -13,6 +14,8 @@ export interface Message {
   model?: string;
   tokens?: { input: number; output: number };
 }
+
+const DEFAULT_CORE_URL = 'http://localhost:3000';
 
 export function App() {
   const { exit } = useApp();
@@ -26,12 +29,43 @@ export function App() {
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('disconnected');
+  const [client, setClient] = useState<SchitzoCoreClient | null>(null);
+
+  // Auto-connect on startup
+  useEffect(() => {
+    connectToCore(DEFAULT_CORE_URL);
+  }, []);
 
   useInput((input, key) => {
     if (key.ctrl && input === 'c') {
       exit();
     }
   });
+
+  const connectToCore = async (url: string) => {
+    setConnectionStatus('connecting');
+    const newClient = new SchitzoCoreClient({ baseUrl: url, timeout: 10000 });
+
+    try {
+      await newClient.healthCheck();
+      setClient(newClient);
+      setConnectionStatus('connected');
+      addSystemMessage(`✓ Connected to Schitzo Core (${url})`);
+    } catch (error) {
+      setConnectionStatus('disconnected');
+      setClient(null);
+      addSystemMessage(`✗ Failed to connect: ${(error as Error).message}. Use /connect <url> to retry.`);
+    }
+  };
+
+  const addSystemMessage = (content: string) => {
+    setMessages((prev) => [...prev, {
+      id: `sys-${Date.now()}`,
+      role: 'system',
+      content,
+      timestamp: new Date(),
+    }]);
+  };
 
   const handleSubmit = useCallback(async (input: string) => {
     if (!input.trim()) return;
@@ -53,30 +87,90 @@ export function App() {
     setIsProcessing(true);
 
     try {
-      // TODO: Wire to Schitzo Core API in PHASE-1.12
-      const response = await simulateResponse(input);
+      if (client && connectionStatus === 'connected') {
+        // Real API call
+        const result = await client.submitTask(input);
+        const assistantMsg: Message = {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: `📋 Task created!\n\nID: ${result.id}\nStatus: ${result.status}\n\nProcessing your request...`,
+          timestamp: new Date(),
+          model: 'claude-sonnet-4-20250514',
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
 
-      const assistantMsg: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: response.content,
-        timestamp: new Date(),
-        model: response.model,
-        tokens: response.tokens,
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+        // Poll for completion
+        pollTaskStatus(result.id);
+      } else {
+        // Offline mode
+        const assistantMsg: Message = {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: `[Offline] Task queued locally: "${input}"\n\nConnect to Schitzo Core with /connect to process tasks.`,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+      }
     } catch (error) {
-      const errorMsg: Message = {
+      const errorContent = error instanceof CoreClientError
+        ? `API Error (${error.statusCode}): ${error.message}`
+        : `Error: ${(error as Error).message}`;
+
+      setMessages((prev) => [...prev, {
         id: `error-${Date.now()}`,
         role: 'system',
-        content: `Error: ${(error as Error).message}`,
+        content: errorContent,
         timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      }]);
     } finally {
       setIsProcessing(false);
     }
-  }, []);
+  }, [client, connectionStatus]);
+
+  const pollTaskStatus = async (taskId: string) => {
+    if (!client) return;
+
+    let attempts = 0;
+    const maxAttempts = 60; // 60 seconds max
+
+    const poll = async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        addSystemMessage(`Task ${taskId} is still processing. Use /task ${taskId} to check later.`);
+        return;
+      }
+
+      try {
+        const status = await client.getTaskStatus(taskId);
+
+        if (status.status === 'success') {
+          setMessages((prev) => [...prev, {
+            id: `result-${Date.now()}`,
+            role: 'assistant',
+            content: `✅ Task completed!\n\nID: ${taskId}`,
+            timestamp: new Date(),
+            model: 'claude-sonnet-4-20250514',
+          }]);
+          return;
+        }
+
+        if (status.status === 'failed') {
+          addSystemMessage(`❌ Task ${taskId} failed.`);
+          return;
+        }
+
+        // Still processing, poll again
+        setTimeout(poll, 1000);
+      } catch {
+        // Silently retry
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 2000);
+        }
+      }
+    };
+
+    setTimeout(poll, 1000);
+  };
 
   const handleCommand = async (cmd: string) => {
     const parts = cmd.split(' ');
@@ -84,29 +178,78 @@ export function App() {
 
     switch (command) {
       case '/help':
-        setMessages((prev) => [...prev, {
-          id: `sys-${Date.now()}`,
-          role: 'system',
-          content: [
-            'Available commands:',
-            '  /help     — Show this help message',
-            '  /status   — Check system status',
-            '  /clear    — Clear message history',
-            '  /model    — Show current model',
-            '  /connect  — Connect to Schitzo Core',
-            '  /quit     — Exit the CLI',
-          ].join('\n'),
-          timestamp: new Date(),
-        }]);
+        addSystemMessage([
+          'Available commands:',
+          '  /help              — Show this help message',
+          '  /status            — Check system status',
+          '  /connect [url]     — Connect to Schitzo Core',
+          '  /task <id>         — Check task status',
+          '  /tasks             — List recent tasks',
+          '  /model             — Show current model',
+          '  /clear             — Clear message history',
+          '  /quit              — Exit the CLI',
+        ].join('\n'));
         break;
 
       case '/status':
-        setMessages((prev) => [...prev, {
-          id: `sys-${Date.now()}`,
-          role: 'system',
-          content: `System: ${connectionStatus}\nModel: claude-sonnet-4-20250514\nQueue: idle`,
-          timestamp: new Date(),
-        }]);
+        if (client && connectionStatus === 'connected') {
+          try {
+            const health = await client.healthCheck();
+            addSystemMessage(`System: ${health.status}\nService: ${health.service}\nTime: ${health.timestamp}`);
+          } catch (error) {
+            addSystemMessage(`Failed to get status: ${(error as Error).message}`);
+          }
+        } else {
+          addSystemMessage(`System: disconnected\nUse /connect to connect to Schitzo Core.`);
+        }
+        break;
+
+      case '/connect': {
+        const url = parts[1] || DEFAULT_CORE_URL;
+        await connectToCore(url);
+        break;
+      }
+
+      case '/task': {
+        const taskId = parts[1];
+        if (!taskId) {
+          addSystemMessage('Usage: /task <task-id>');
+          break;
+        }
+        if (!client) {
+          addSystemMessage('Not connected. Use /connect first.');
+          break;
+        }
+        try {
+          const task = await client.getTaskStatus(taskId);
+          addSystemMessage(`Task: ${task.id}\nStatus: ${task.status}\nPrompt: ${task.userPrompt}\nCreated: ${task.createdAt}`);
+        } catch (error) {
+          addSystemMessage(`Failed to get task: ${(error as Error).message}`);
+        }
+        break;
+      }
+
+      case '/tasks': {
+        if (!client) {
+          addSystemMessage('Not connected. Use /connect first.');
+          break;
+        }
+        try {
+          const result = await client.listTasks({ limit: 10 });
+          if (result.data.length === 0) {
+            addSystemMessage('No tasks found.');
+          } else {
+            const lines = result.data.map((t) => `  ${t.status.padEnd(10)} ${t.id.slice(0, 8)}… ${t.userPrompt.slice(0, 40)}`);
+            addSystemMessage(`Recent tasks (${result.total} total):\n${lines.join('\n')}`);
+          }
+        } catch (error) {
+          addSystemMessage(`Failed to list tasks: ${(error as Error).message}`);
+        }
+        break;
+      }
+
+      case '/model':
+        addSystemMessage('Current model: claude-sonnet-4-20250514 (via 9Router)');
         break;
 
       case '/clear':
@@ -118,46 +261,12 @@ export function App() {
         }]);
         break;
 
-      case '/model':
-        setMessages((prev) => [...prev, {
-          id: `sys-${Date.now()}`,
-          role: 'system',
-          content: 'Current model: claude-sonnet-4-20250514 (via 9Router)',
-          timestamp: new Date(),
-        }]);
-        break;
-
-      case '/connect':
-        setConnectionStatus('connecting');
-        setMessages((prev) => [...prev, {
-          id: `sys-${Date.now()}`,
-          role: 'system',
-          content: 'Connecting to Schitzo Core...',
-          timestamp: new Date(),
-        }]);
-        // TODO: Actual connection in PHASE-1.12
-        setTimeout(() => {
-          setConnectionStatus('connected');
-          setMessages((prev) => [...prev, {
-            id: `sys-${Date.now()}`,
-            role: 'system',
-            content: '✓ Connected to Schitzo Core (localhost:3000)',
-            timestamp: new Date(),
-          }]);
-        }, 500);
-        break;
-
       case '/quit':
         exit();
         break;
 
       default:
-        setMessages((prev) => [...prev, {
-          id: `sys-${Date.now()}`,
-          role: 'system',
-          content: `Unknown command: ${command}. Use /help for available commands.`,
-          timestamp: new Date(),
-        }]);
+        addSystemMessage(`Unknown command: ${command}. Use /help for available commands.`);
     }
   };
 
@@ -169,14 +278,4 @@ export function App() {
       <StatusBar connectionStatus={connectionStatus} isProcessing={isProcessing} />
     </Box>
   );
-}
-
-// Temporary simulation until PHASE-1.12 wires to Core
-async function simulateResponse(input: string): Promise<{ content: string; model: string; tokens: { input: number; output: number } }> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return {
-    content: `[Simulated] Task received: "${input}"\n\nThis will be processed by 9Router once connected to Schitzo Core.`,
-    model: 'claude-sonnet-4-20250514',
-    tokens: { input: input.length * 2, output: 50 },
-  };
 }
