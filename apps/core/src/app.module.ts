@@ -20,11 +20,13 @@ import { HandleWebhookUseCase } from './application/use-cases/handle-webhook.use
 import { TaskIntakeUseCase } from './application/use-cases/task-intake.use-case';
 import { TELEGRAM_PORT } from './application/ports/telegram.port';
 import { TASK_INTAKE_PORT } from './application/ports/task-intake.port';
+import { NINE_ROUTER_PORT } from './application/ports/nine-router.port';
 
 // Infrastructure
 import { PrismaService } from './infrastructure/prisma/prisma.service';
 import { TaskRepository } from './infrastructure/repositories/task.repository';
 import { TelegramApiAdapter } from './infrastructure/adapters/telegram-api.adapter';
+import { NineRouterAdapter } from './infrastructure/adapters/nine-router.adapter';
 import { AgentRegistryService } from './infrastructure/services/agent-registry.service';
 import { ModelPricingService } from './infrastructure/services/model-pricing.service';
 
@@ -47,6 +49,8 @@ import { ModelPricingService } from './infrastructure/services/model-pricing.ser
     { provide: 'ITaskRepository', useClass: TaskRepository },
     { provide: TELEGRAM_PORT, useClass: TelegramApiAdapter },
     TelegramApiAdapter,
+    { provide: NINE_ROUTER_PORT, useClass: NineRouterAdapter },
+    NineRouterAdapter,
     AgentRegistryService,
     ModelPricingService,
 
