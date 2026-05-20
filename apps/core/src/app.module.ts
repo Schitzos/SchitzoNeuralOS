@@ -20,6 +20,7 @@ import { HandleWebhookUseCase } from './application/use-cases/handle-webhook.use
 import { TaskIntakeUseCase } from './application/use-cases/task-intake.use-case';
 import { ProcessTaskUseCase } from './application/use-cases/process-task.use-case';
 import { SendTelegramResponseUseCase } from './application/use-cases/send-telegram-response.use-case';
+import { HandleStatusCommandUseCase } from './application/use-cases/handle-status-command.use-case';
 import { TaskStatusTracker } from './domain/services/task-status-tracker.service';
 import { TASK_LOGGER_PORT } from './application/ports/task-logger.port';
 import { TaskLoggerAdapter } from './infrastructure/logging/task-logger.adapter';
@@ -73,6 +74,7 @@ import { ModelPricingService } from './infrastructure/services/model-pricing.ser
     { provide: TASK_INTAKE_PORT, useClass: TaskIntakeUseCase },
     ProcessTaskUseCase,
     SendTelegramResponseUseCase,
+    HandleStatusCommandUseCase,
     TaskStatusTracker,
     { provide: TASK_LOGGER_PORT, useClass: TaskLoggerAdapter },
     TaskLoggerAdapter,

@@ -6,19 +6,23 @@ import { isValidUpdate } from '../../domain/entities/telegram-update.entity';
 import { TelegramCommand } from '../../domain/value-objects/telegram-command.vo';
 import { ITelegramPort, TELEGRAM_PORT } from '../ports/telegram.port';
 import { ITaskIntakePort, TASK_INTAKE_PORT } from '../ports/task-intake.port';
+import { HandleStatusCommandUseCase } from './handle-status-command.use-case';
 
 @Injectable()
 export class HandleWebhookUseCase {
   private readonly logger = new Logger(HandleWebhookUseCase.name);
   private readonly telegramPort: ITelegramPort;
   private readonly taskIntake: ITaskIntakePort;
+  private readonly statusCommand: HandleStatusCommandUseCase;
 
   constructor(
     @Inject(TELEGRAM_PORT) telegramPort: ITelegramPort,
     @Inject(TASK_INTAKE_PORT) taskIntake: ITaskIntakePort,
+    statusCommand: HandleStatusCommandUseCase,
   ) {
     this.telegramPort = telegramPort;
     this.taskIntake = taskIntake;
+    this.statusCommand = statusCommand;
   }
 
   async execute(update: unknown): Promise<void> {
@@ -75,10 +79,7 @@ export class HandleWebhookUseCase {
         break;
 
       case '/status':
-        await this.telegramPort.sendMessage(
-          chatId,
-          '✅ System is operational\n🤖 SchitzoNeuralOS Core is running',
-        );
+        await this.statusCommand.execute(chatId);
         break;
 
       default:
