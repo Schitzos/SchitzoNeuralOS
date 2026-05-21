@@ -37,11 +37,13 @@ import { NineRouterAdapter } from './infrastructure/adapters/nine-router.adapter
 import { BullMQAdapter } from './infrastructure/queue/bullmq.adapter';
 import { AgentRegistryService } from './infrastructure/services/agent-registry.service';
 import { ModelPricingService } from './infrastructure/services/model-pricing.service';
+import { TelegramPollingService } from './infrastructure/adapters/telegram-polling.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env', '../../.env'],
       validationSchema: envValidationSchema,
       validationOptions: { abortEarly: true, allowUnknown: true },
     }),
@@ -78,6 +80,7 @@ import { ModelPricingService } from './infrastructure/services/model-pricing.ser
     TaskStatusTracker,
     { provide: TASK_LOGGER_PORT, useClass: TaskLoggerAdapter },
     TaskLoggerAdapter,
+    TelegramPollingService,
   ],
   exports: [
     PrismaService,
