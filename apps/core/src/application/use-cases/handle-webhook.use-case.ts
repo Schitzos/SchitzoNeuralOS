@@ -2,19 +2,27 @@
 // Orchestrates domain logic, delegates I/O to ports
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { TelegramUpdate, isValidUpdate } from '../../domain/entities/telegram-update.entity';
+import { isValidUpdate } from '../../domain/entities/telegram-update.entity';
 import { TelegramCommand } from '../../domain/value-objects/telegram-command.vo';
 import { ITelegramPort, TELEGRAM_PORT } from '../ports/telegram.port';
+import { ITaskIntakePort, TASK_INTAKE_PORT } from '../ports/task-intake.port';
+import { HandleStatusCommandUseCase } from './handle-status-command.use-case';
 
 @Injectable()
 export class HandleWebhookUseCase {
   private readonly logger = new Logger(HandleWebhookUseCase.name);
   private readonly telegramPort: ITelegramPort;
+  private readonly taskIntake: ITaskIntakePort;
+  private readonly statusCommand: HandleStatusCommandUseCase;
 
   constructor(
     @Inject(TELEGRAM_PORT) telegramPort: ITelegramPort,
+    @Inject(TASK_INTAKE_PORT) taskIntake: ITaskIntakePort,
+    statusCommand: HandleStatusCommandUseCase,
   ) {
     this.telegramPort = telegramPort;
+    this.taskIntake = taskIntake;
+    this.statusCommand = statusCommand;
   }
 
   async execute(update: unknown): Promise<void> {
@@ -31,6 +39,7 @@ export class HandleWebhookUseCase {
 
     const chatId = message.chat.id;
     const text = message.text;
+    const messageId = message.message_id;
 
     try {
       await this.telegramPort.sendTypingAction(chatId);
@@ -40,13 +49,13 @@ export class HandleWebhookUseCase {
       if (command) {
         await this.handleCommand(chatId, command);
       } else {
-        await this.handleMessage(chatId, text);
+        await this.handleTaskSubmission(chatId, text, messageId);
       }
     } catch (error) {
       this.logger.error(`Error processing update: ${(error as Error).message}`);
       await this.telegramPort.sendMessage(
         chatId,
-        'Sorry, I encountered an error processing your request. Please try again later.',
+        '❌ Sorry, I encountered an error processing your request. Please try again later.',
       );
     }
   }
@@ -58,22 +67,19 @@ export class HandleWebhookUseCase {
       case '/start':
         await this.telegramPort.sendMessage(
           chatId,
-          'Welcome to SchitzoNeuralOS! \u{1F916}\n\nI can help you with various tasks. Send me a message or use /help to see available commands.',
+          'Welcome to SchitzoNeuralOS! 🤖\n\nI can help you with various tasks. Send me a message or use /help to see available commands.',
         );
         break;
 
       case '/help':
         await this.telegramPort.sendMessage(
           chatId,
-          'Available commands:\n/start - Start the bot\n/help - Show this help message\n/status - Check system status\n\nYou can also send me any message and I\'ll try to help you with it.',
+          'Available commands:\n/start - Start the bot\n/help - Show this help message\n/status - Check system status\n\nYou can also send me any message and I\'ll create a task from it.',
         );
         break;
 
       case '/status':
-        await this.telegramPort.sendMessage(
-          chatId,
-          '\u2705 System is operational\n\u{1F916} SchitzoNeuralOS Core is running',
-        );
+        await this.statusCommand.execute(chatId);
         break;
 
       default:
@@ -84,12 +90,19 @@ export class HandleWebhookUseCase {
     }
   }
 
-  private async handleMessage(chatId: number, text: string): Promise<void> {
-    this.logger.log(`Processing message from chat ${chatId}`);
+  private async handleTaskSubmission(chatId: number, text: string, messageId?: number): Promise<void> {
+    this.logger.log(`Submitting task from chat ${chatId}`);
+
+    const result = await this.taskIntake.submit({
+      userPrompt: text,
+      sourceType: 'telegram',
+      sourceChatId: chatId,
+      sourceMessageId: messageId,
+    });
 
     await this.telegramPort.sendMessage(
       chatId,
-      `I received your message: "${text}"\n\nI'm currently in development mode. More features coming soon! Use /help to see available commands.`,
+      `📋 Task created!\n\nID: \`${result.taskId}\`\nStatus: ${result.status}\n\nI'll process this and get back to you.`,
     );
   }
 }
